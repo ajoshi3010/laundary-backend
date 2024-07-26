@@ -107,6 +107,21 @@ app.get('/contacts/inWork', async (req, res) => {
     res.json({ success: false, error: error.message });
   }
 });
+// Fetch contacts ready for delivery
+app.get('/contacts/readyForDelivery', async (req, res) => {
+  try {
+    const readyForDelivery = await db.collection('readyForDelivery').get();
+
+    const readyForDeliveryData = readyForDelivery.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+
+    res.json({ success: true, readyForDelivery: readyForDeliveryData });
+  } catch (error) {
+    res.json({ success: false, error: error.message });
+  }
+});
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
