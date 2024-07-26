@@ -1,11 +1,10 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
-const twilio = require('twilio');
 const admin = require('firebase-admin');
-
-const serviceAccount = require('./serviceAccountKey.json');
-const { accountSid, authToken, twilioPhone } = require('./config'); // Import Twilio credentials
+const dotenv = require('dotenv');
+dotenv.config();
+const serviceAccount = JSON.parse(process.env.GOOGLE_CREDENTIALS);
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount)
@@ -17,7 +16,6 @@ const app = express();
 app.use(bodyParser.json());
 app.use(cors());
 
-// const client = twilio(accountSid, authToken);
 
 // Add new contact and mark clothes as in work
 app.post('/addContact', async (req, res) => {
@@ -46,13 +44,6 @@ app.post('/markReady', async (req, res) => {
     await db.collection('inWork').doc(id).delete();
     await db.collection('readyForDelivery').add({ name, phone });
 
-    // Send SMS
-    // await client.messages.create({
-    //   body: 'Your clothes are ready for delivery.',
-    //   from: twilioPhone,
-    //   to: phone
-    // });
-
     res.json({ success: true });
   } catch (error) {
     res.json({ success: false, error: error.message });
@@ -65,13 +56,6 @@ app.post('/markDelivered', async (req, res) => {
   try {
     await db.collection('readyForDelivery').doc(id).delete();
     await db.collection('history').add({ name, phone, status: 'delivered', timestamp: new Date() });
-
-    // Send SMS
-    // await client.messages.create({
-    //   body: 'Your clothes have been delivered.',
-    //   from: twilioPhone,
-    //   to: phone
-    // });
 
     res.json({ success: true });
   } catch (error) {
